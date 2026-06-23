@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import RebalanceCalculator from '@/components/RebalanceCalculator'
@@ -11,7 +11,7 @@ export default async function DashboardPage() {
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options))
         },
@@ -37,12 +37,20 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(10)
 
+  // Load closed trades
+  const { data: closedTrades } = await supabase
+    .from('closed_trades')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('closed_at', { ascending: false })
+
   return (
     <RebalanceCalculator
       userId={user.id}
       userEmail={user.email ?? ''}
       initialPositions={positions ?? []}
       initialSnapshots={snapshots ?? []}
+      initialClosedTrades={closedTrades ?? []}
     />
   )
 }
