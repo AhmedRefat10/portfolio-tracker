@@ -3,6 +3,7 @@ export interface Position {
   ticker: string
   shares: number
   price: number
+  entry_price: number
   target_pct: number
   is_cash: boolean
   sort_order: number
